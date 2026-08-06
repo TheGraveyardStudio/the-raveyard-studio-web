@@ -52,73 +52,93 @@
         const my = moon.y;
         const mr = moon.r;
 
-        // Layer 1: Wide atmospheric light cast across the sky
-        const skyGlow = ctx.createRadialGradient(mx, my, mr * 2, mx, my, mr * 14);
-        skyGlow.addColorStop(0, 'rgba(180, 185, 200, 0.08)');
-        skyGlow.addColorStop(0.3, 'rgba(150, 155, 175, 0.04)');
-        skyGlow.addColorStop(0.6, 'rgba(120, 125, 145, 0.015)');
+        // Layer 1: Huge atmospheric sky lighting (moonlight casting across entire night sky)
+        const skyGlow = ctx.createRadialGradient(mx, my, mr * 0.5, mx, my, Math.max(W, H) * 0.95);
+        skyGlow.addColorStop(0, 'rgba(215, 225, 245, 0.28)');
+        skyGlow.addColorStop(0.25, 'rgba(165, 185, 215, 0.16)');
+        skyGlow.addColorStop(0.55, 'rgba(110, 130, 165, 0.07)');
+        skyGlow.addColorStop(0.85, 'rgba(60, 75, 105, 0.02)');
         skyGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = skyGlow;
-        ctx.beginPath();
-        ctx.arc(mx, my, mr * 14, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(0, 0, W, H);
 
-        // Layer 2: Medium halo glow
-        const haloGlow = ctx.createRadialGradient(mx, my, mr * 0.8, mx, my, mr * 5);
-        haloGlow.addColorStop(0, 'rgba(200, 205, 220, 0.18)');
-        haloGlow.addColorStop(0.4, 'rgba(170, 175, 195, 0.08)');
+        // Layer 2: Volumetric Moonlight Light Rays / Shafts
+        ctx.save();
+        for (let i = 0; i < 5; i++) {
+            const angle = (i - 2) * 0.18 + Math.sin(time * 0.0005 + i) * 0.02;
+            const rayWidth = mr * (2.2 + i * 0.5);
+            const rayGrad = ctx.createLinearGradient(mx, my, mx + Math.sin(angle) * H, my + Math.cos(angle) * H);
+            rayGrad.addColorStop(0, 'rgba(225, 235, 255, 0.12)');
+            rayGrad.addColorStop(0.4, 'rgba(185, 200, 230, 0.05)');
+            rayGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.fillStyle = rayGrad;
+            ctx.beginPath();
+            ctx.moveTo(mx, my);
+            ctx.lineTo(mx - rayWidth + Math.sin(angle) * H, H);
+            ctx.lineTo(mx + rayWidth + Math.sin(angle) * H, H);
+            ctx.closePath();
+            ctx.fill();
+        }
+        ctx.restore();
+
+        // Layer 3: Medium intense halo glow
+        const haloGlow = ctx.createRadialGradient(mx, my, mr * 0.5, mx, my, mr * 4.5);
+        haloGlow.addColorStop(0, 'rgba(235, 240, 255, 0.45)');
+        haloGlow.addColorStop(0.3, 'rgba(195, 210, 235, 0.22)');
+        haloGlow.addColorStop(0.7, 'rgba(145, 165, 195, 0.08)');
         haloGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = haloGlow;
         ctx.beginPath();
-        ctx.arc(mx, my, mr * 5, 0, Math.PI * 2);
+        ctx.arc(mx, my, mr * 4.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Layer 3: Tight inner glow (corona)
-        const corona = ctx.createRadialGradient(mx, my, mr * 0.9, mx, my, mr * 2.2);
-        corona.addColorStop(0, 'rgba(220, 225, 240, 0.3)');
-        corona.addColorStop(0.5, 'rgba(190, 195, 210, 0.1)');
+        // Layer 4: Tight bright corona
+        const corona = ctx.createRadialGradient(mx, my, mr * 0.8, mx, my, mr * 1.8);
+        corona.addColorStop(0, 'rgba(250, 252, 255, 0.7)');
+        corona.addColorStop(0.5, 'rgba(220, 230, 250, 0.3)');
         corona.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = corona;
         ctx.beginPath();
-        ctx.arc(mx, my, mr * 2.2, 0, Math.PI * 2);
+        ctx.arc(mx, my, mr * 1.8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Moon disc base — grayish full moon
-        const discGrad = ctx.createRadialGradient(mx - mr * 0.25, my - mr * 0.2, mr * 0.1, mx, my, mr);
-        discGrad.addColorStop(0, 'rgba(220, 220, 225, 0.85)');
-        discGrad.addColorStop(0.5, 'rgba(190, 192, 200, 0.7)');
-        discGrad.addColorStop(0.8, 'rgba(160, 162, 175, 0.55)');
-        discGrad.addColorStop(1, 'rgba(130, 135, 155, 0.4)');
+        // Moon disc base — bright silvery full moon
+        const discGrad = ctx.createRadialGradient(mx - mr * 0.25, my - mr * 0.2, mr * 0.05, mx, my, mr);
+        discGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+        discGrad.addColorStop(0.4, 'rgba(235, 240, 248, 0.92)');
+        discGrad.addColorStop(0.75, 'rgba(205, 215, 230, 0.85)');
+        discGrad.addColorStop(1, 'rgba(170, 185, 205, 0.75)');
         ctx.fillStyle = discGrad;
         ctx.beginPath();
         ctx.arc(mx, my, mr, 0, Math.PI * 2);
         ctx.fill();
 
-        // Crater details (subtle darker circles)
+        // Crater details (subtle grayish texture)
         const craters = [
-            { cx: -0.2, cy: 0.15, cr: 0.18, a: 0.08 },
-            { cx: 0.25, cy: -0.1, cr: 0.12, a: 0.06 },
-            { cx: -0.05, cy: -0.3, cr: 0.1, a: 0.05 },
-            { cx: 0.3, cy: 0.25, cr: 0.15, a: 0.07 },
-            { cx: -0.35, cy: -0.1, cr: 0.08, a: 0.04 },
-            { cx: 0.1, cy: 0.35, cr: 0.09, a: 0.05 },
+            { cx: -0.2, cy: 0.15, cr: 0.18, a: 0.09 },
+            { cx: 0.25, cy: -0.1, cr: 0.12, a: 0.07 },
+            { cx: -0.05, cy: -0.3, cr: 0.1, a: 0.06 },
+            { cx: 0.3, cy: 0.25, cr: 0.15, a: 0.08 },
+            { cx: -0.35, cy: -0.1, cr: 0.08, a: 0.05 },
+            { cx: 0.1, cy: 0.35, cr: 0.09, a: 0.06 },
         ];
         for (const c of craters) {
             const cGrad = ctx.createRadialGradient(
                 mx + c.cx * mr, my + c.cy * mr, 0,
                 mx + c.cx * mr, my + c.cy * mr, c.cr * mr
             );
-            cGrad.addColorStop(0, `rgba(100, 105, 125, ${c.a})`);
-            cGrad.addColorStop(1, 'rgba(100, 105, 125, 0)');
+            cGrad.addColorStop(0, `rgba(130, 140, 160, ${c.a})`);
+            cGrad.addColorStop(1, 'rgba(130, 140, 160, 0)');
             ctx.fillStyle = cGrad;
             ctx.beginPath();
             ctx.arc(mx + c.cx * mr, my + c.cy * mr, c.cr * mr, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Soft edge highlight (rim light)
-        ctx.strokeStyle = 'rgba(230, 232, 245, 0.15)';
-        ctx.lineWidth = 1.5;
+        // Crisp rim light highlight
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(mx, my, mr - 0.5, 0, Math.PI * 2);
         ctx.stroke();
@@ -682,10 +702,10 @@
     // ── Sky gradient ──────────────────────────────────────────────
     function drawSky() {
         const grad = ctx.createLinearGradient(0, 0, 0, H);
-        grad.addColorStop(0, '#050610');
-        grad.addColorStop(0.4, '#0a0c1a');
-        grad.addColorStop(0.7, '#0e1020');
-        grad.addColorStop(1, '#0a0b14');
+        grad.addColorStop(0, '#090c14');
+        grad.addColorStop(0.35, '#0e1422');
+        grad.addColorStop(0.7, '#131b2e');
+        grad.addColorStop(1, '#080b12');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, W, H);
     }

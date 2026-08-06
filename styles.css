@@ -57,23 +57,23 @@ body {
     filter: blur(120px);
     z-index: -1;
     pointer-events: none;
-    opacity: 0.2;
+    opacity: 0.3;
 }
 
 .glow-1 {
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-    top: -100px;
-    left: -100px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(200, 215, 235, 0.12) 0%, transparent 70%);
+    top: -150px;
+    right: -100px;
 }
 
 .glow-2 {
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, var(--secondary-accent) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(150, 175, 205, 0.08) 0%, transparent 70%);
     bottom: -150px;
-    right: -150px;
+    left: -100px;
 }
 
 /* Layout Container */
