@@ -622,7 +622,7 @@
             this.perchDuration = 0;
             this.perchDir = 1;
             this.headTurnTimer = 0;
-            this.willPerch = Math.random() < 0.8; // 80% chance to land on a tombstone
+            this.willPerch = Math.random() < 0.95; // 95% chance to land
         }
 
         update(time) {
@@ -655,8 +655,8 @@
                             const dy = tombTopY - this.y;
                             const dist = Math.sqrt(dx * dx + dy * dy);
 
-                            // Trigger landing steer when approaching tombstone
-                            if (dist < 280 && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
+                            // Trigger landing descent from further away (350px) for a long smooth glide
+                            if (dist < 350 && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
                                 this.targetTombstone = t;
                                 t.isOccupiedByCrow = true;
                                 this.state = 'LANDING';
@@ -678,24 +678,25 @@
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
 
-                // Smooth gliding swoop down to tombstone top
-                this.x += dx * 0.07;
-                this.y += dy * 0.07;
-                this.wingPhase += this.wingSpeed * 1.6;
+                // Ultra-slow, smooth, graceful gliding descent curve (2.5 - 3 sec glide)
+                this.x += dx * 0.032;
+                this.y += dy * 0.032;
+                this.isGliding = true; // Wings glided out during descent
 
-                if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
+                if (Math.abs(dx) < 3.5 && Math.abs(dy) < 3.5) {
                     this.x = targetX;
                     this.y = targetY;
                     this.state = 'PERCHED';
                     this.perchTimer = 0;
-                    this.perchDuration = rand(240, 500); // Sit for 4 to 8.5 seconds
-                    this.perchDir = Math.random() < 0.5 ? 1 : -1;
+                    this.perchDuration = rand(150, 360); // Sit for 2.5 to 6 seconds
+                    this.perchDir = (targetX > W * 0.5) ? -1 : 1;
                 }
 
             } else if (this.state === 'PERCHED') {
+                this.isGliding = false;
                 this.perchTimer++;
                 this.headTurnTimer++;
-                if (this.headTurnTimer > rand(40, 110)) {
+                if (this.headTurnTimer > rand(40, 100)) {
                     this.perchDir *= -1; // Turn head left/right
                     this.headTurnTimer = 0;
                 }
@@ -707,19 +708,19 @@
                         this.targetTombstone.isOccupiedByCrow = false;
                         this.targetTombstone = null;
                     }
-                    this.vx = (Math.random() < 0.5 ? 1 : -1) * rand(1.5, 2.5);
-                    this.vy = -rand(2.0, 3.2); // Powerful upward flap
+                    this.vx = (Math.random() < 0.5 ? 1 : -1) * rand(1.2, 2.0);
+                    this.vy = -rand(1.8, 2.8); // Smooth upward take off
                 }
 
             } else if (this.state === 'TAKING_OFF') {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.wingPhase += this.wingSpeed * 2.0; // Fast wing flapping
+                this.wingPhase += this.wingSpeed * 1.6; // Rapid wing flaps on take off
 
-                if (this.y < H * 0.4) {
+                if (this.y < H * 0.45) {
                     this.state = 'FLYING';
-                    this.willPerch = Math.random() < 0.7;
-                    this.vy = rand(-0.3, 0.3);
+                    this.willPerch = Math.random() < 0.9;
+                    this.vy = rand(-0.25, 0.25);
                 }
             }
         }
