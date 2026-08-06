@@ -601,40 +601,39 @@
         reset() {
             const fromLeft = Math.random() < 0.5;
             this.x = fromLeft ? rand(-120, -40) : rand(W + 40, W + 120);
-            // Dispersed starting altitudes across entire sky & low horizon
-            this.y = rand(H * 0.1, H * 0.65);
-            this.vx = fromLeft ? rand(0.9, 2.2) : rand(-2.2, -0.9);
-            this.vy = rand(-0.4, 0.4); // Swooping vertical velocity
+            this.y = rand(H * 0.08, H * 0.55);
+            this.vx = fromLeft ? rand(1.1, 2.4) : rand(-2.4, -1.1);
+            this.vy = rand(-0.04, 0.04); // Linear, steady flight path
             this.size = rand(9, 15);
             this.wingPhase = rand(0, Math.PI * 2);
-            this.wingSpeed = rand(0.08, 0.15);
+            this.wingSpeed = rand(0.07, 0.13);
             this.glideTimer = 0;
             this.isGliding = false;
             this.glideDuration = 0;
-            this.soarAmplitude = rand(0.5, 2.5);
-            this.soarFreq = rand(0.008, 0.02);
+            this.soarAmplitude = rand(0.05, 0.25); // Minimal vertical wave (linear flight)
+            this.soarFreq = rand(0.005, 0.012);
             this.alpha = rand(0.7, 0.98);
 
             // Perch state machine
-            this.state = 'FLYING'; // 'FLYING', 'LANDING', 'PERCHED', 'TAKING_OFF'
+            this.state = 'FLYING';
             this.targetTombstone = null;
             this.perchTimer = 0;
             this.perchDuration = 0;
             this.perchDir = 1;
             this.headTurnTimer = 0;
-            this.willPerch = Math.random() < 0.95; // 95% chance to land
+            this.willPerch = Math.random() < 0.35; // 35% chance to land (3x rarer!)
         }
 
         update(time) {
             if (this.state === 'FLYING') {
-                // Organic dispersed flight with swooping curves & turbulence
+                // Steady linear flight across the sky
                 this.x += this.vx;
-                this.y += this.vy + Math.sin(time * this.soarFreq + this.x * 0.02) * this.soarAmplitude;
+                this.y += this.vy + Math.sin(time * this.soarFreq + this.x * 0.01) * this.soarAmplitude;
 
                 this.glideTimer++;
-                if (!this.isGliding && Math.random() < 0.003) {
+                if (!this.isGliding && Math.random() < 0.002) {
                     this.isGliding = true;
-                    this.glideDuration = rand(50, 140);
+                    this.glideDuration = rand(60, 160);
                     this.glideTimer = 0;
                 }
                 if (this.isGliding && this.glideTimer > this.glideDuration) {
@@ -644,7 +643,7 @@
                     this.wingPhase += this.wingSpeed;
                 }
 
-                // Check for available tombstone to land on
+                // Check for available tombstone to land on (rarer trigger)
                 if (this.willPerch && !this.targetTombstone && tombstones.length > 0) {
                     const gy = groundY();
                     for (const t of tombstones) {
@@ -655,8 +654,7 @@
                             const dy = tombTopY - this.y;
                             const dist = Math.sqrt(dx * dx + dy * dy);
 
-                            // Trigger landing descent from further away (350px) for a long smooth glide
-                            if (dist < 350 && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
+                            if (dist < 200 && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
                                 this.targetTombstone = t;
                                 t.isOccupiedByCrow = true;
                                 this.state = 'LANDING';
