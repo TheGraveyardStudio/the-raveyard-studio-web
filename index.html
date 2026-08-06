@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Graveyard Studio | Mobile Game Development</title>
+    <meta name="description" content="The Graveyard Studio - Creator of innovative mobile games including War of Words. Based in Bursa, Turkey.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Animated Glow Effects -->
+    <div class="glow-bg glow-1"></div>
+    <div class="glow-bg glow-2"></div>
+    
+    <!-- Navigation Bar -->
+    <header class="site-header">
+        <div class="container header-container">
+            <a href="index.html" class="brand-logo">
+                <div class="logo-icon">💀</div>
+                <div class="logo-text">
+                    <span class="brand-name">THE GRAVEYARD</span>
+                    <span class="brand-sub">STUDIO</span>
+                </div>
+            </a>
+            <nav class="main-nav" id="mainNav">
+                <a href="#home" class="nav-link active">Ana Sayfa</a>
+                <a href="#games" class="nav-link">Oyunlarımız</a>
+                <a href="#about" class="nav-link">Hakkımızda</a>
+                <a href="#contact" class="nav-link">İletişim</a>
+                <a href="privacy.html" class="nav-link privacy-pill">Gizlilik Politikası</a>
+            </nav>
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Menü">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container hero-container">
+            <div class="hero-badge">🎮 Mobil Oyun Geliştirme Stüdyosu</div>
+            <h1 class="hero-title">
+                Sözcüklerin Savaşı Başlıyor: <br>
+                <span class="gradient-text">Unutulmaz Oyun Deneyimleri</span>
+            </h1>
+            <p class="hero-description">
+                The Graveyard Studio olarak, zeka, strateji ve eğlenceyi harmanlayan yenilikçi mobil oyunlar geliştiriyoruz. Sözcüklerin gücünü keşfedin.
+            </p>
+            <div class="hero-cta-group">
+                <a href="#games" class="btn btn-primary">
+                    <span>Oyunlarımızı Keşfet</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <a href="#contact" class="btn btn-secondary">İletişime Geç</a>
+            </div>
+            
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number">100K+</div>
+                    <div class="stat-label">Aktif Oyuncu</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <div class="stat-number">4.8 ★</div>
+                    <div class="stat-label">Oyuncu Puanı</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <div class="stat-number">Bursa / TR</div>
+                    <div class="stat-label">Merkez Stüdyo</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Showcase Section -->
+    <section id="games" class="section games-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag font-accent">ÖNE ÇIKAN OYUNUMUZ</span>
+                <h2 class="section-title">War of Words</h2>
+                <p class="section-subtitle">Kelime dağarcığınızı ve stratejik zekanızı kapıştıracağınız sürükleyici kelime savaşı oyunu.</p>
+            </div>
+
+            <div class="game-showcase-card">
+                <div class="game-banner">
+                    <div class="game-badge">Şimdi Google Play'de</div>
+                    <div class="game-icon-large">⚔️</div>
+                    <h3 class="game-card-title">War of Words</h3>
+                    <p class="game-card-genre">Kelime & Strateji Bulmacası</p>
+                </div>
+                <div class="game-details">
+                    <h4>Oyun Hakkında</h4>
+                    <p>
+                        War of Words, klasik kelime oyunlarının ötesine geçerek oyunculara harflerle stratejik hamleler yapma imkanı tanır. Rakibinize karşı kelimelerin gücünü kullanın, zekanızı konuşturun ve liderlik tablosunun zirvesine tırmanın!
+                    </p>
+                    <div class="game-features-grid">
+                        <div class="feature-item">
+                            <span class="feature-icon">🧠</span>
+                            <span>Zeka & Strateji Odaklı</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🏆</span>
+                            <span>Canlı Liderlik Tablosu</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">⚡</span>
+                            <span>Hızlı & Akıcı Hamleler</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🎨</span>
+                            <span>Modern & Şık Tasarım</span>
+                        </div>
+                    </div>
+                    <div class="game-action">
+                        <a href="https://play.google.com/store" target="_blank" class="btn btn-playstore">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186c-.183.183-.398.241-.61.173a.855.855 0 0 1-.5-.785V2.426c0-.367.202-.686.5-.785.212-.068.427-.01.609.173zm11.3 9.073l2.846-2.846 3.666 2.083c.84.477.84 1.258 0 1.735l-3.666 2.083-2.846-2.846-.000-.209zM4.743 1.053l10.024 10.024-2.132 2.132L1.879 2.453a.987.987 0 0 1 .326-.84c.617-.617 1.765-.333 2.538.106zm0 21.894c-.773.439-1.921.723-2.538.106a.987.987 0 0 1-.326-.84l10.756-10.756 2.132 2.132L4.743 22.947z"/></svg>
+                            <span>Google Play'den İndir</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-content">
+                    <span class="section-tag">STÜDYO HAKKINDA</span>
+                    <h2 class="section-title">The Graveyard Studio</h2>
+                    <p class="about-text">
+                        Türkiye merkezli bağımsız mobil oyun stüdyomuz, tutku ve inovasyon ile oyunculara benzersiz dijital deneyimler sunmayı hedefler. Mobil platformlar için geliştirdiğimiz projelerde yüksek performans, kusursuz kullanıcı deneyimi ve özgün mekanikler önceliğimizdir.
+                    </p>
+                    
+                    <div class="company-info-card">
+                        <div class="info-row">
+                            <span class="info-label">Resmi Unvan:</span>
+                            <span class="info-value">The Graveyard Studio (Burak Ruçoğlu)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Konum:</span>
+                            <span class="info-value">Bursa, Türkiye</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">E-posta:</span>
+                            <span class="info-value">rucoglubrk@gmail.com</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Alan Adı:</span>
+                            <span class="info-value">thegraveyardstudio.com</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-card-visual">
+                    <div class="visual-inner">
+                        <div class="visual-icon">🚀</div>
+                        <h3>Tutkulu Oyun Geliştirme</h3>
+                        <p>Fikir aşamasından Google Play yayınlanma sürecine kadar her detayı titizlikle tasarlıyoruz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-tag">BİZE ULAŞIN</span>
+                <h2 class="section-title">İletişime Geçin</h2>
+                <p class="section-subtitle">Görüşleriniz, destek talepleriniz veya iş birliği fırsatları için bizimle iletişime geçebilirsiniz.</p>
+            </div>
+
+            <div class="contact-box">
+                <div class="contact-card">
+                    <div class="contact-icon">✉️</div>
+                    <h4>E-posta</h4>
+                    <p><a href="mailto:rucoglubrk@gmail.com">rucoglubrk@gmail.com</a></p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon">📍</div>
+                    <h4>Adres</h4>
+                    <p>Zafer Mh. Muratlı Cd. Serez Sk. No:10, Bursa / Türkiye</p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon">🛡️</div>
+                    <h4>Yasal & Destek</h4>
+                    <p><a href="privacy.html">Gizlilik Politikası</a> | <a href="terms.html">Kullanım Şartları</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-container">
+            <div class="footer-left">
+                <div class="footer-brand">
+                    <span>💀 THE GRAVEYARD STUDIO</span>
+                </div>
+                <p class="footer-copy">© 2026 The Graveyard Studio. Tüm hakları saklıdır.</p>
+            </div>
+            <div class="footer-links">
+                <a href="index.html">Ana Sayfa</a>
+                <a href="privacy.html">Gizlilik Politikası</a>
+                <a href="terms.html">Kullanım Şartları</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
