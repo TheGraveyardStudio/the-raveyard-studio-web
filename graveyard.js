@@ -42,30 +42,86 @@
     // ── Moon ───────────────────────────────────────────────────────
     const moon = { x: 0, y: 0, r: 50 };
     function initMoon() {
-        moon.x = W * 0.82;
-        moon.y = H * 0.12;
-        moon.r = Math.min(W, H) * 0.04;
+        moon.x = W * 0.8;
+        moon.y = H * 0.13;
+        moon.r = Math.min(W, H) * 0.07;
     }
 
-    function drawMoon() {
-        // Outer glow
-        const g1 = ctx.createRadialGradient(moon.x, moon.y, moon.r * 0.5, moon.x, moon.y, moon.r * 6);
-        g1.addColorStop(0, 'rgba(139, 92, 246, 0.08)');
-        g1.addColorStop(0.5, 'rgba(100, 70, 160, 0.03)');
-        g1.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = g1;
+    function drawMoon(time) {
+        const mx = moon.x;
+        const my = moon.y;
+        const mr = moon.r;
+
+        // Layer 1: Wide atmospheric light cast across the sky
+        const skyGlow = ctx.createRadialGradient(mx, my, mr * 2, mx, my, mr * 14);
+        skyGlow.addColorStop(0, 'rgba(180, 185, 200, 0.08)');
+        skyGlow.addColorStop(0.3, 'rgba(150, 155, 175, 0.04)');
+        skyGlow.addColorStop(0.6, 'rgba(120, 125, 145, 0.015)');
+        skyGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = skyGlow;
         ctx.beginPath();
-        ctx.arc(moon.x, moon.y, moon.r * 6, 0, Math.PI * 2);
+        ctx.arc(mx, my, mr * 14, 0, Math.PI * 2);
         ctx.fill();
 
-        // Moon disc
-        const g2 = ctx.createRadialGradient(moon.x - moon.r * 0.3, moon.y - moon.r * 0.3, 0, moon.x, moon.y, moon.r);
-        g2.addColorStop(0, 'rgba(200, 190, 220, 0.25)');
-        g2.addColorStop(1, 'rgba(140, 120, 180, 0.1)');
-        ctx.fillStyle = g2;
+        // Layer 2: Medium halo glow
+        const haloGlow = ctx.createRadialGradient(mx, my, mr * 0.8, mx, my, mr * 5);
+        haloGlow.addColorStop(0, 'rgba(200, 205, 220, 0.18)');
+        haloGlow.addColorStop(0.4, 'rgba(170, 175, 195, 0.08)');
+        haloGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = haloGlow;
         ctx.beginPath();
-        ctx.arc(moon.x, moon.y, moon.r, 0, Math.PI * 2);
+        ctx.arc(mx, my, mr * 5, 0, Math.PI * 2);
         ctx.fill();
+
+        // Layer 3: Tight inner glow (corona)
+        const corona = ctx.createRadialGradient(mx, my, mr * 0.9, mx, my, mr * 2.2);
+        corona.addColorStop(0, 'rgba(220, 225, 240, 0.3)');
+        corona.addColorStop(0.5, 'rgba(190, 195, 210, 0.1)');
+        corona.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = corona;
+        ctx.beginPath();
+        ctx.arc(mx, my, mr * 2.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Moon disc base — grayish full moon
+        const discGrad = ctx.createRadialGradient(mx - mr * 0.25, my - mr * 0.2, mr * 0.1, mx, my, mr);
+        discGrad.addColorStop(0, 'rgba(220, 220, 225, 0.85)');
+        discGrad.addColorStop(0.5, 'rgba(190, 192, 200, 0.7)');
+        discGrad.addColorStop(0.8, 'rgba(160, 162, 175, 0.55)');
+        discGrad.addColorStop(1, 'rgba(130, 135, 155, 0.4)');
+        ctx.fillStyle = discGrad;
+        ctx.beginPath();
+        ctx.arc(mx, my, mr, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crater details (subtle darker circles)
+        const craters = [
+            { cx: -0.2, cy: 0.15, cr: 0.18, a: 0.08 },
+            { cx: 0.25, cy: -0.1, cr: 0.12, a: 0.06 },
+            { cx: -0.05, cy: -0.3, cr: 0.1, a: 0.05 },
+            { cx: 0.3, cy: 0.25, cr: 0.15, a: 0.07 },
+            { cx: -0.35, cy: -0.1, cr: 0.08, a: 0.04 },
+            { cx: 0.1, cy: 0.35, cr: 0.09, a: 0.05 },
+        ];
+        for (const c of craters) {
+            const cGrad = ctx.createRadialGradient(
+                mx + c.cx * mr, my + c.cy * mr, 0,
+                mx + c.cx * mr, my + c.cy * mr, c.cr * mr
+            );
+            cGrad.addColorStop(0, `rgba(100, 105, 125, ${c.a})`);
+            cGrad.addColorStop(1, 'rgba(100, 105, 125, 0)');
+            ctx.fillStyle = cGrad;
+            ctx.beginPath();
+            ctx.arc(mx + c.cx * mr, my + c.cy * mr, c.cr * mr, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Soft edge highlight (rim light)
+        ctx.strokeStyle = 'rgba(230, 232, 245, 0.15)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(mx, my, mr - 0.5, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     // ── Stars ──────────────────────────────────────────────────────
@@ -78,7 +134,7 @@
                 x: rand(0, W),
                 y: rand(0, H * 0.5),
                 r: rand(0.3, 1.2),
-                alpha: rand(0.1, 0.5),
+                alpha: rand(0.2, 0.7),
                 twinkleSpeed: rand(0.005, 0.02),
                 twinkleOffset: rand(0, Math.PI * 2),
             });
@@ -88,7 +144,7 @@
     function drawStars(time) {
         for (const s of stars) {
             const alpha = s.alpha * (0.5 + 0.5 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset));
-            ctx.fillStyle = `rgba(200, 195, 230, ${alpha})`;
+            ctx.fillStyle = `rgba(210, 205, 240, ${alpha})`;
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
             ctx.fill();
@@ -126,7 +182,7 @@
             const h = t.baseH * scale;
             const x = t.x;
             const y = gy + yOff;
-            const alpha = lerp(0.15, 0.5, t.depth);
+            const alpha = lerp(0.3, 0.8, t.depth);
 
             ctx.save();
             ctx.translate(x, y);
@@ -135,13 +191,13 @@
             if (t.type === 'cross') {
                 const armW = w * 0.18;
                 const armSpan = w * 0.5;
-                ctx.fillStyle = `rgba(28, 30, 52, ${alpha})`;
+                ctx.fillStyle = `rgba(40, 42, 70, ${alpha})`;
                 // Vertical beam
                 ctx.fillRect(-armW / 2, -h, armW, h);
                 // Horizontal beam
                 ctx.fillRect(-armSpan / 2, -h * 0.72, armSpan, armW);
             } else {
-                ctx.fillStyle = `rgba(28, 30, 52, ${alpha})`;
+                ctx.fillStyle = `rgba(40, 42, 70, ${alpha})`;
                 ctx.beginPath();
                 ctx.moveTo(-w / 2, 0);
                 ctx.lineTo(-w / 2, -h * 0.6);
@@ -152,7 +208,7 @@
                 ctx.fill();
 
                 // Subtle crack / detail line
-                ctx.strokeStyle = `rgba(50, 52, 80, ${alpha * 0.5})`;
+                ctx.strokeStyle = `rgba(60, 62, 95, ${alpha * 0.6})`;
                 ctx.lineWidth = 0.5;
                 ctx.beginPath();
                 ctx.moveTo(rand(-w * 0.2, w * 0.2), -h * 0.3);
@@ -211,7 +267,7 @@
         if (depth <= 0 || length < 5) return;
         const endX = x + Math.cos(angle) * length;
         const endY = y + Math.sin(angle) * length;
-        ctx.strokeStyle = `rgba(20, 22, 38, ${0.3 + depth * 0.05})`;
+        ctx.strokeStyle = `rgba(25, 27, 45, ${0.4 + depth * 0.08})`;
         ctx.lineWidth = thickness;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -234,7 +290,7 @@
             ctx.rotate(sway);
 
             // Trunk
-            ctx.strokeStyle = 'rgba(20, 22, 38, 0.45)';
+            ctx.strokeStyle = 'rgba(25, 27, 45, 0.65)';
             ctx.lineWidth = 5;
             ctx.lineCap = 'round';
             ctx.beginPath();
@@ -263,7 +319,7 @@
                 x: rand(-200, W + 200),
                 y: rand(groundY() - 80, groundY() + 40),
                 r: rand(80, 200),
-                alpha: rand(0.01, 0.04),
+                alpha: rand(0.025, 0.07),
                 speed: rand(0.15, 0.5),
                 drift: rand(-0.1, 0.1),
             });
@@ -277,8 +333,8 @@
             if (f.x - f.r > W + 100) f.x = -f.r - 100;
 
             const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r);
-            g.addColorStop(0, `rgba(80, 70, 110, ${f.alpha})`);
-            g.addColorStop(1, 'rgba(80, 70, 110, 0)');
+            g.addColorStop(0, `rgba(90, 80, 130, ${f.alpha})`);
+            g.addColorStop(1, 'rgba(90, 80, 130, 0)');
             ctx.fillStyle = g;
             ctx.beginPath();
             ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
@@ -297,7 +353,7 @@
                 y: rand(H * 0.3, groundY()),
                 len: rand(40, 120),
                 speed: rand(1.5, 4),
-                alpha: rand(0.01, 0.03),
+                alpha: rand(0.02, 0.06),
             });
         }
     }
@@ -309,7 +365,7 @@
                 w.x = -w.len - 50;
                 w.y = rand(H * 0.3, groundY());
             }
-            ctx.strokeStyle = `rgba(150, 140, 180, ${w.alpha})`;
+            ctx.strokeStyle = `rgba(160, 150, 195, ${w.alpha})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(w.x, w.y);
@@ -338,7 +394,7 @@
             this.glideDuration = 0;
             this.soarAmplitude = rand(0.3, 1);
             this.soarFreq = rand(0.005, 0.015);
-            this.alpha = rand(0.4, 0.8);
+            this.alpha = rand(0.55, 0.95);
         }
 
         update(time) {
@@ -443,7 +499,7 @@
             this.x = tombstone.x + rand(-30, 30);
             this.y = gy + lerp(-25, 5, tombstone.depth);
             this.size = rand(7, 12) * lerp(0.5, 1, tombstone.depth);
-            this.alpha = lerp(0.2, 0.6, tombstone.depth);
+            this.alpha = lerp(0.35, 0.8, tombstone.depth);
             this.dir = Math.random() < 0.5 ? 1 : -1;
             this.peckPhase = rand(0, Math.PI * 2);
             this.peckSpeed = rand(0.03, 0.06);
@@ -562,7 +618,7 @@
                 drift: rand(0.5, 2),
                 wobble: rand(0.01, 0.03),
                 phase: rand(0, Math.PI * 2),
-                alpha: rand(0.1, 0.25),
+                alpha: rand(0.15, 0.35),
                 rotation: rand(0, Math.PI * 2),
                 rotSpeed: rand(0.02, 0.05),
             });
@@ -640,7 +696,7 @@
 
         drawSky();
         drawStars(time);
-        drawMoon();
+        drawMoon(time);
         drawWind(time);
         drawTrees(time);
         drawTombstones(time);
