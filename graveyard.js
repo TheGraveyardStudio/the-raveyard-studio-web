@@ -179,14 +179,19 @@
 
     function initTombstones() {
         tombstones = [];
-        const count = Math.floor(W / 90);
-        for (let i = 0; i < count; i++) {
-            const x = rand(30, W - 30);
-            const baseW = rand(28, 52);
-            const baseH = rand(45, 90);
-            const type = Math.random() < 0.35 ? 'cross' : (Math.random() < 0.7 ? 'rounded' : 'stepped');
-            const tilt = rand(-0.05, 0.05);
-            const depth = rand(0.2, 1); // parallax depth
+        const minSpacing = 115; // Clean spacing between tombstones
+        const margin = 120; // Keep clear of entrance gate pillars
+        const usableWidth = W - margin * 2;
+        const numSlots = Math.max(4, Math.floor(usableWidth / minSpacing));
+
+        for (let i = 0; i < numSlots; i++) {
+            const slotX = margin + (i + 0.5) * (usableWidth / numSlots);
+            const x = slotX + rand(-15, 15);
+            const baseW = rand(32, 48);
+            const baseH = rand(50, 85);
+            const type = i % 3 === 0 ? 'cross' : (i % 3 === 1 ? 'rounded' : 'stepped');
+            const tilt = rand(-0.04, 0.04);
+            const depth = rand(0.3, 1);
             tombstones.push({ x, baseW, baseH, type, tilt, depth });
         }
         tombstones.sort((a, b) => a.depth - b.depth);
@@ -825,9 +830,119 @@
         }
     }
 
+    // ── Mysterious Walking Silhouettes ────────────────────────────
+    class WalkingSilhouette {
+        constructor(x, speed, scale, hasLantern) {
+            this.x = x;
+            this.speed = speed; // positive = left to right, negative = right to left
+            this.scale = scale;
+            this.hasLantern = hasLantern;
+            this.walkCycle = rand(0, Math.PI * 2);
+        }
+
+        update() {
+            this.x += this.speed;
+            this.walkCycle += 0.04;
+            if (this.speed > 0 && this.x > W + 80) this.x = -80;
+            if (this.speed < 0 && this.x < -80) this.x = W + 80;
+        }
+
+        draw(ctx) {
+            const gy = groundY();
+            const y = gy + lerp(-12, 18, this.scale);
+            const height = 75 * this.scale;
+            const dir = this.speed > 0 ? 1 : -1;
+            const legAngle = Math.sin(this.walkCycle) * 0.35;
+            const armAngle = Math.cos(this.walkCycle) * 0.28;
+
+            ctx.save();
+            ctx.translate(this.x, y);
+            ctx.scale(dir, 1);
+            ctx.globalAlpha = lerp(0.65, 0.95, this.scale);
+
+            // Dark hooded silhouette fill
+            ctx.fillStyle = '#090b14';
+            ctx.strokeStyle = '#090b14';
+
+            // Walking Legs
+            ctx.lineWidth = 4 * this.scale;
+            ctx.lineCap = 'round';
+
+            // Back Leg
+            ctx.beginPath();
+            ctx.moveTo(0, -height * 0.35);
+            ctx.lineTo(-Math.sin(legAngle) * height * 0.3, 0);
+            ctx.stroke();
+
+            // Front Leg
+            ctx.beginPath();
+            ctx.moveTo(0, -height * 0.35);
+            ctx.lineTo(Math.sin(legAngle) * height * 0.3, 0);
+            ctx.stroke();
+
+            // Cloak/Robe Body
+            ctx.beginPath();
+            ctx.moveTo(-height * 0.16, -height * 0.35);
+            ctx.lineTo(-height * 0.22, 0);
+            ctx.lineTo(height * 0.22, 0);
+            ctx.lineTo(height * 0.16, -height * 0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            // Upper Body & Hooded Head
+            ctx.beginPath();
+            ctx.arc(0, -height * 0.78, height * 0.15, Math.PI * 0.8, Math.PI * 2.2);
+            ctx.lineTo(height * 0.14, -height * 0.35);
+            ctx.lineTo(-height * 0.14, -height * 0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            // Hood Point / Peak
+            ctx.beginPath();
+            ctx.moveTo(-height * 0.12, -height * 0.82);
+            ctx.lineTo(-height * 0.22, -height * 0.75);
+            ctx.lineTo(-height * 0.05, -height * 0.93);
+            ctx.closePath();
+            ctx.fill();
+
+            // Lantern (if carrying one)
+            if (this.hasLantern) {
+                const handX = height * 0.25 + Math.sin(armAngle) * 6;
+                const handY = -height * 0.45 + Math.cos(armAngle) * 4;
+                const lanternY = handY + 20 * this.scale;
+
+                // Arm & Chain
+                ctx.lineWidth = 1.8 * this.scale;
+                ctx.beginPath();
+                ctx.moveTo(0, -height * 0.62);
+                ctx.lineTo(handX, handY);
+                ctx.lineTo(handX, lanternY - 4 * this.scale);
+                ctx.stroke();
+
+                // Warm Glowing Light Cast
+                const lGlow = ctx.createRadialGradient(handX, lanternY, 1, handX, lanternY, 45 * this.scale);
+                lGlow.addColorStop(0, 'rgba(255, 200, 110, 0.75)');
+                lGlow.addColorStop(0.3, 'rgba(240, 160, 60, 0.25)');
+                lGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = lGlow;
+                ctx.beginPath();
+                ctx.arc(handX, lanternY, 45 * this.scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lantern Metal Housing
+                ctx.fillStyle = '#ffcf77';
+                ctx.fillRect(handX - 3.5 * this.scale, lanternY - 5 * this.scale, 7 * this.scale, 10 * this.scale);
+            }
+
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        }
+    }
+
     // ── Initialize all elements ───────────────────────────────────
     let flyingCrows = [];
     let groundCrows = [];
+    let walkingSilhouettes = [];
 
     function init() {
         initMoon();
@@ -854,6 +969,12 @@
         for (let i = 0; i < groundCount; i++) {
             groundCrows.push(new GroundCrow(eligible[i]));
         }
+
+        // Walking mysterious silhouettes
+        walkingSilhouettes = [
+            new WalkingSilhouette(W * 0.2, 0.4, 0.85, true),  // Walking right with lantern
+            new WalkingSilhouette(W * 0.75, -0.35, 0.65, false), // Walking left slowly
+        ];
     }
 
     init();
