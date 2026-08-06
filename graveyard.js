@@ -580,25 +580,40 @@
 
     // ── Flying & Perching Crows ───────────────────────────────────
     class FlyingCrow {
-        constructor() {
-            this.reset();
+        constructor(initialTombstone = null) {
+            if (initialTombstone) {
+                this.reset();
+                this.targetTombstone = initialTombstone;
+                this.targetTombstone.isOccupiedByCrow = true;
+                const gy = groundY();
+                const scale = lerp(0.65, 1.2, initialTombstone.depth);
+                this.x = initialTombstone.x;
+                this.y = gy + lerp(-25, 12, initialTombstone.depth) - (initialTombstone.baseH * scale) - 2;
+                this.state = 'PERCHED';
+                this.perchTimer = rand(0, 150);
+                this.perchDuration = rand(240, 480);
+                this.perchDir = Math.random() < 0.5 ? 1 : -1;
+            } else {
+                this.reset();
+            }
         }
 
         reset() {
             const fromLeft = Math.random() < 0.5;
-            this.x = fromLeft ? rand(-100, -50) : rand(W + 50, W + 100);
-            this.y = rand(H * 0.08, H * 0.38);
-            this.vx = fromLeft ? rand(0.8, 1.8) : rand(-1.8, -0.8);
-            this.vy = rand(-0.15, 0.15);
+            this.x = fromLeft ? rand(-120, -40) : rand(W + 40, W + 120);
+            // Dispersed starting altitudes across entire sky & low horizon
+            this.y = rand(H * 0.1, H * 0.65);
+            this.vx = fromLeft ? rand(0.9, 2.2) : rand(-2.2, -0.9);
+            this.vy = rand(-0.4, 0.4); // Swooping vertical velocity
             this.size = rand(9, 15);
             this.wingPhase = rand(0, Math.PI * 2);
-            this.wingSpeed = rand(0.07, 0.13);
+            this.wingSpeed = rand(0.08, 0.15);
             this.glideTimer = 0;
             this.isGliding = false;
             this.glideDuration = 0;
-            this.soarAmplitude = rand(0.3, 1);
-            this.soarFreq = rand(0.005, 0.015);
-            this.alpha = rand(0.65, 0.95);
+            this.soarAmplitude = rand(0.5, 2.5);
+            this.soarFreq = rand(0.008, 0.02);
+            this.alpha = rand(0.7, 0.98);
 
             // Perch state machine
             this.state = 'FLYING'; // 'FLYING', 'LANDING', 'PERCHED', 'TAKING_OFF'
@@ -607,18 +622,19 @@
             this.perchDuration = 0;
             this.perchDir = 1;
             this.headTurnTimer = 0;
-            this.willPerch = Math.random() < 0.7; // 70% chance to perch
+            this.willPerch = Math.random() < 0.8; // 80% chance to land on a tombstone
         }
 
         update(time) {
             if (this.state === 'FLYING') {
+                // Organic dispersed flight with swooping curves & turbulence
                 this.x += this.vx;
-                this.y += this.vy + Math.sin(time * this.soarFreq + this.x * 0.01) * this.soarAmplitude * 0.1;
+                this.y += this.vy + Math.sin(time * this.soarFreq + this.x * 0.02) * this.soarAmplitude;
 
                 this.glideTimer++;
-                if (!this.isGliding && Math.random() < 0.002) {
+                if (!this.isGliding && Math.random() < 0.003) {
                     this.isGliding = true;
-                    this.glideDuration = rand(60, 150);
+                    this.glideDuration = rand(50, 140);
                     this.glideTimer = 0;
                 }
                 if (this.isGliding && this.glideTimer > this.glideDuration) {
@@ -628,21 +644,24 @@
                     this.wingPhase += this.wingSpeed;
                 }
 
-                // Check if approaching an un-occupied tombstone to land
+                // Check for available tombstone to land on
                 if (this.willPerch && !this.targetTombstone && tombstones.length > 0) {
                     const gy = groundY();
                     for (const t of tombstones) {
-                        const scale = lerp(0.65, 1.2, t.depth);
-                        const tombTopY = gy + lerp(-25, 12, t.depth) - (t.baseH * scale);
-                        const dx = t.x - this.x;
-                        const dy = tombTopY - this.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (!t.isOccupiedByCrow) {
+                            const scale = lerp(0.65, 1.2, t.depth);
+                            const tombTopY = gy + lerp(-25, 12, t.depth) - (t.baseH * scale);
+                            const dx = t.x - this.x;
+                            const dy = tombTopY - this.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
 
-                        if (dist < 190 && !t.isOccupiedByCrow && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
-                            this.targetTombstone = t;
-                            t.isOccupiedByCrow = true;
-                            this.state = 'LANDING';
-                            break;
+                            // Trigger landing steer when approaching tombstone
+                            if (dist < 280 && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
+                                this.targetTombstone = t;
+                                t.isOccupiedByCrow = true;
+                                this.state = 'LANDING';
+                                break;
+                            }
                         }
                     }
                 }
@@ -659,47 +678,48 @@
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
 
-                this.x += dx * 0.06;
-                this.y += dy * 0.06;
-                this.wingPhase += this.wingSpeed * 1.5; // Rapid flapping when landing
+                // Smooth gliding swoop down to tombstone top
+                this.x += dx * 0.07;
+                this.y += dy * 0.07;
+                this.wingPhase += this.wingSpeed * 1.6;
 
-                if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+                if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
                     this.x = targetX;
                     this.y = targetY;
                     this.state = 'PERCHED';
                     this.perchTimer = 0;
-                    this.perchDuration = rand(180, 420); // Perch for 3 to 7 seconds
+                    this.perchDuration = rand(240, 500); // Sit for 4 to 8.5 seconds
                     this.perchDir = Math.random() < 0.5 ? 1 : -1;
                 }
 
             } else if (this.state === 'PERCHED') {
                 this.perchTimer++;
                 this.headTurnTimer++;
-                if (this.headTurnTimer > rand(50, 130)) {
-                    this.perchDir *= -1;
+                if (this.headTurnTimer > rand(40, 110)) {
+                    this.perchDir *= -1; // Turn head left/right
                     this.headTurnTimer = 0;
                 }
 
-                // Ready to take off!
+                // Time to take off!
                 if (this.perchTimer > this.perchDuration) {
                     this.state = 'TAKING_OFF';
                     if (this.targetTombstone) {
                         this.targetTombstone.isOccupiedByCrow = false;
                         this.targetTombstone = null;
                     }
-                    this.vx = (Math.random() < 0.5 ? 1 : -1) * rand(1.2, 2.2);
-                    this.vy = -rand(1.5, 2.5); // Fly upwards
+                    this.vx = (Math.random() < 0.5 ? 1 : -1) * rand(1.5, 2.5);
+                    this.vy = -rand(2.0, 3.2); // Powerful upward flap
                 }
 
             } else if (this.state === 'TAKING_OFF') {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.wingPhase += this.wingSpeed * 1.8; // Fast wing flaps
+                this.wingPhase += this.wingSpeed * 2.0; // Fast wing flapping
 
-                if (this.y < H * 0.35) {
+                if (this.y < H * 0.4) {
                     this.state = 'FLYING';
-                    this.willPerch = Math.random() < 0.5;
-                    this.vy = rand(-0.15, 0.15);
+                    this.willPerch = Math.random() < 0.7;
+                    this.vy = rand(-0.3, 0.3);
                 }
             }
         }
@@ -1098,13 +1118,17 @@
         initWind();
         initLeaves();
 
-        // Flying crows — not too many (4-7)
+        // Flying & Perching crows — 2 start pre-perched on tombstone tops!
         flyingCrows = [];
-        const flyCount = Math.max(4, Math.min(7, Math.floor(W / 250)));
+        const flyCount = Math.max(5, Math.min(8, Math.floor(W / 220)));
         for (let i = 0; i < flyCount; i++) {
-            const crow = new FlyingCrow();
-            crow.x = rand(0, W); // Start spread across screen
-            flyingCrows.push(crow);
+            if (i < 2 && tombstones.length > (i * 2 + 1)) {
+                flyingCrows.push(new FlyingCrow(tombstones[i * 2 + 1]));
+            } else {
+                const crow = new FlyingCrow();
+                crow.x = rand(0, W);
+                flyingCrows.push(crow);
+            }
         }
 
         // Ground crows — pick a few tombstones
