@@ -341,16 +341,25 @@
         ctx.stroke();
     }
 
-    // ── Slow Swaying Bushes (Replaces old trees) ───────────────────
+    // ── Slow Swaying Thin Woody Twig Bushes (İnce Odunsu Çalılar) ──
     let bushes = [];
     function initBushes() {
         bushes = [];
-        const count = Math.max(6, Math.floor(W / 140));
+        const count = Math.max(8, Math.floor(W / 110));
         for (let i = 0; i < count; i++) {
+            const twigs = [];
+            const twigCount = Math.floor(rand(5, 9));
+            for (let t = 0; t < twigCount; t++) {
+                twigs.push({
+                    angle: rand(-0.6, 0.6),
+                    length: rand(30, 65),
+                    subAngle: rand(-0.4, 0.4),
+                    subLength: rand(15, 30),
+                });
+            }
             bushes.push({
-                x: rand(20, W - 20),
-                radius: rand(18, 38),
-                clusters: Math.floor(rand(4, 7)),
+                x: rand(30, W - 30),
+                twigs: twigs,
                 phase: rand(0, Math.PI * 2),
             });
         }
@@ -359,37 +368,43 @@
     function drawBushes(time) {
         const gy = groundY();
         for (const b of bushes) {
-            // Very slow, gentle sway
-            const sway = Math.sin(time * 0.0006 + b.phase) * 0.015;
+            // Extremely slow, smooth pendulum sway back and forth to left & right (8-10 sec cycle)
+            const sway = Math.sin(time * 0.00018 + b.phase) * 0.045;
             ctx.save();
-            ctx.translate(b.x, gy + 4);
+            ctx.translate(b.x, gy + 2);
             ctx.rotate(sway);
 
-            // Dark earthy green/slate bush foliage
-            const bushGrad = ctx.createRadialGradient(0, -b.radius * 0.5, 0, 0, -b.radius * 0.5, b.radius * 1.2);
-            bushGrad.addColorStop(0, '#22302a');
-            bushGrad.addColorStop(0.6, '#151e1a');
-            bushGrad.addColorStop(1, '#0d1311');
+            ctx.strokeStyle = '#1d2332';
+            ctx.lineCap = 'round';
 
-            ctx.fillStyle = bushGrad;
+            // Draw thin woody branches (brambles/twigs)
+            for (const tw of b.twigs) {
+                const endX = Math.sin(tw.angle) * tw.length;
+                const endY = -Math.cos(tw.angle) * tw.length;
 
-            // Draw cluster of rounded leaf balls
-            for (let c = 0; c < b.clusters; c++) {
-                const cAngle = (c / b.clusters) * Math.PI - Math.PI / 2;
-                const cDist = b.radius * 0.45;
-                const cx = Math.cos(cAngle) * cDist;
-                const cy = Math.sin(cAngle) * cDist - b.radius * 0.4;
-                const cr = b.radius * rand(0.45, 0.65);
-
+                // Main twig stem
+                ctx.lineWidth = 2.2;
                 ctx.beginPath();
-                ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
 
-                // Moonlit leaf edge highlight
-                ctx.strokeStyle = 'rgba(160, 190, 185, 0.25)';
-                ctx.lineWidth = 1;
+                // Moonlit highlight on twig
+                ctx.strokeStyle = 'rgba(180, 205, 235, 0.35)';
+                ctx.lineWidth = 0.8;
                 ctx.beginPath();
-                ctx.arc(cx, cy - cr * 0.2, cr * 0.8, Math.PI * 1.1, Math.PI * 1.9);
+                ctx.moveTo(0, 0);
+                ctx.lineTo(endX * 0.9, endY * 0.9);
+                ctx.stroke();
+                ctx.strokeStyle = '#1d2332';
+
+                // Sub-twig branch
+                const subX = endX + Math.sin(tw.angle + tw.subAngle) * tw.subLength;
+                const subY = endY - Math.cos(tw.angle + tw.subAngle) * tw.subLength;
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(endX * 0.6, endY * 0.6);
+                ctx.lineTo(subX, subY);
                 ctx.stroke();
             }
 
@@ -526,18 +541,18 @@
             ctx.fill();
         }
     }
-    // ── Wind Streaks ──────────────────────────────────────────────
+    // ── Soft Wind Streaks ──────────────────────────────────────────
     let windStreaks = [];
     function initWind() {
         windStreaks = [];
-        const count = Math.floor(W / 150);
+        const count = Math.floor(W / 180);
         for (let i = 0; i < count; i++) {
             windStreaks.push({
                 x: rand(0, W),
-                y: rand(H * 0.3, groundY()),
-                len: rand(40, 120),
-                speed: rand(1.5, 4),
-                alpha: rand(0.02, 0.06),
+                y: rand(H * 0.25, groundY()),
+                len: rand(60, 160),
+                speed: rand(0.7, 1.6),
+                alpha: rand(0.008, 0.016),
             });
         }
     }
@@ -545,15 +560,20 @@
     function drawWind(time) {
         for (const w of windStreaks) {
             w.x += w.speed;
-            if (w.x > W + 50) {
-                w.x = -w.len - 50;
-                w.y = rand(H * 0.3, groundY());
+            if (w.x > W + 80) {
+                w.x = -w.len - 80;
+                w.y = rand(H * 0.25, groundY());
             }
-            ctx.strokeStyle = `rgba(160, 150, 195, ${w.alpha})`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = `rgba(180, 200, 230, ${w.alpha})`;
+            ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(w.x, w.y);
-            ctx.lineTo(w.x + w.len, w.y + Math.sin(time * 0.003 + w.x * 0.01) * 3);
+            ctx.quadraticCurveTo(
+                w.x + w.len * 0.5,
+                w.y + Math.sin(time * 0.0008 + w.x * 0.004) * 2.5,
+                w.x + w.len,
+                w.y
+            );
             ctx.stroke();
         }
     }
