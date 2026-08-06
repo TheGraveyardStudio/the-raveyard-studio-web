@@ -526,7 +526,6 @@
             ctx.fill();
         }
     }
-
     // ── Wind Streaks ──────────────────────────────────────────────
     let windStreaks = [];
     function initWind() {
@@ -559,7 +558,7 @@
         }
     }
 
-    // ── Flying Crows ──────────────────────────────────────────────
+    // ── Flying & Perching Crows ───────────────────────────────────
     class FlyingCrow {
         constructor() {
             this.reset();
@@ -568,50 +567,176 @@
         reset() {
             const fromLeft = Math.random() < 0.5;
             this.x = fromLeft ? rand(-100, -50) : rand(W + 50, W + 100);
-            this.y = rand(H * 0.08, H * 0.5);
-            this.vx = fromLeft ? rand(0.6, 1.8) : rand(-1.8, -0.6);
-            this.vy = rand(-0.2, 0.2);
-            this.size = rand(8, 16);
+            this.y = rand(H * 0.08, H * 0.38);
+            this.vx = fromLeft ? rand(0.8, 1.8) : rand(-1.8, -0.8);
+            this.vy = rand(-0.15, 0.15);
+            this.size = rand(9, 15);
             this.wingPhase = rand(0, Math.PI * 2);
-            this.wingSpeed = rand(0.06, 0.12);
+            this.wingSpeed = rand(0.07, 0.13);
             this.glideTimer = 0;
             this.isGliding = false;
             this.glideDuration = 0;
             this.soarAmplitude = rand(0.3, 1);
             this.soarFreq = rand(0.005, 0.015);
-            this.alpha = rand(0.55, 0.95);
+            this.alpha = rand(0.65, 0.95);
+
+            // Perch state machine
+            this.state = 'FLYING'; // 'FLYING', 'LANDING', 'PERCHED', 'TAKING_OFF'
+            this.targetTombstone = null;
+            this.perchTimer = 0;
+            this.perchDuration = 0;
+            this.perchDir = 1;
+            this.headTurnTimer = 0;
+            this.willPerch = Math.random() < 0.7; // 70% chance to perch
         }
 
         update(time) {
-            this.x += this.vx;
-            this.y += this.vy + Math.sin(time * this.soarFreq + this.x * 0.01) * this.soarAmplitude * 0.1;
+            if (this.state === 'FLYING') {
+                this.x += this.vx;
+                this.y += this.vy + Math.sin(time * this.soarFreq + this.x * 0.01) * this.soarAmplitude * 0.1;
 
-            // Occasional glide
-            this.glideTimer++;
-            if (!this.isGliding && Math.random() < 0.002) {
-                this.isGliding = true;
-                this.glideDuration = rand(60, 150);
-                this.glideTimer = 0;
-            }
-            if (this.isGliding && this.glideTimer > this.glideDuration) {
-                this.isGliding = false;
-            }
+                this.glideTimer++;
+                if (!this.isGliding && Math.random() < 0.002) {
+                    this.isGliding = true;
+                    this.glideDuration = rand(60, 150);
+                    this.glideTimer = 0;
+                }
+                if (this.isGliding && this.glideTimer > this.glideDuration) {
+                    this.isGliding = false;
+                }
+                if (!this.isGliding) {
+                    this.wingPhase += this.wingSpeed;
+                }
 
-            if (!this.isGliding) {
-                this.wingPhase += this.wingSpeed;
-            }
+                // Check if approaching an un-occupied tombstone to land
+                if (this.willPerch && !this.targetTombstone && tombstones.length > 0) {
+                    const gy = groundY();
+                    for (const t of tombstones) {
+                        const scale = lerp(0.65, 1.2, t.depth);
+                        const tombTopY = gy + lerp(-25, 12, t.depth) - (t.baseH * scale);
+                        const dx = t.x - this.x;
+                        const dy = tombTopY - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
 
-            // Reset when off screen
-            if (this.vx > 0 && this.x > W + 150) this.reset();
-            if (this.vx < 0 && this.x < -150) this.reset();
+                        if (dist < 190 && !t.isOccupiedByCrow && ((this.vx > 0 && dx > 0) || (this.vx < 0 && dx < 0))) {
+                            this.targetTombstone = t;
+                            t.isOccupiedByCrow = true;
+                            this.state = 'LANDING';
+                            break;
+                        }
+                    }
+                }
+
+                if (this.vx > 0 && this.x > W + 150) this.reset();
+                if (this.vx < 0 && this.x < -150) this.reset();
+
+            } else if (this.state === 'LANDING') {
+                const gy = groundY();
+                const scale = lerp(0.65, 1.2, this.targetTombstone.depth);
+                const targetX = this.targetTombstone.x;
+                const targetY = gy + lerp(-25, 12, this.targetTombstone.depth) - (this.targetTombstone.baseH * scale) - 2;
+
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+
+                this.x += dx * 0.06;
+                this.y += dy * 0.06;
+                this.wingPhase += this.wingSpeed * 1.5; // Rapid flapping when landing
+
+                if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+                    this.x = targetX;
+                    this.y = targetY;
+                    this.state = 'PERCHED';
+                    this.perchTimer = 0;
+                    this.perchDuration = rand(180, 420); // Perch for 3 to 7 seconds
+                    this.perchDir = Math.random() < 0.5 ? 1 : -1;
+                }
+
+            } else if (this.state === 'PERCHED') {
+                this.perchTimer++;
+                this.headTurnTimer++;
+                if (this.headTurnTimer > rand(50, 130)) {
+                    this.perchDir *= -1;
+                    this.headTurnTimer = 0;
+                }
+
+                // Ready to take off!
+                if (this.perchTimer > this.perchDuration) {
+                    this.state = 'TAKING_OFF';
+                    if (this.targetTombstone) {
+                        this.targetTombstone.isOccupiedByCrow = false;
+                        this.targetTombstone = null;
+                    }
+                    this.vx = (Math.random() < 0.5 ? 1 : -1) * rand(1.2, 2.2);
+                    this.vy = -rand(1.5, 2.5); // Fly upwards
+                }
+
+            } else if (this.state === 'TAKING_OFF') {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.wingPhase += this.wingSpeed * 1.8; // Fast wing flaps
+
+                if (this.y < H * 0.35) {
+                    this.state = 'FLYING';
+                    this.willPerch = Math.random() < 0.5;
+                    this.vy = rand(-0.15, 0.15);
+                }
+            }
         }
 
         draw(ctx) {
+            const s = this.size;
+
+            if (this.state === 'PERCHED') {
+                // Perched Crow Silhouette on tombstone top
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.perchDir, 1);
+                ctx.globalAlpha = this.alpha;
+
+                // Body
+                ctx.fillStyle = '#090b14';
+                ctx.beginPath();
+                ctx.ellipse(0, -s * 0.3, s * 0.35, s * 0.22, -0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Tail
+                ctx.beginPath();
+                ctx.moveTo(-s * 0.25, -s * 0.15);
+                ctx.lineTo(-s * 0.5, 0);
+                ctx.lineTo(-s * 0.45, -s * 0.2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Head
+                ctx.beginPath();
+                ctx.arc(s * 0.3, -s * 0.45, s * 0.15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Beak
+                ctx.beginPath();
+                ctx.moveTo(s * 0.42, -s * 0.47);
+                ctx.lineTo(s * 0.6, -s * 0.42);
+                ctx.lineTo(s * 0.42, -s * 0.38);
+                ctx.closePath();
+                ctx.fill();
+
+                // Folded wing outline
+                ctx.strokeStyle = 'rgba(40, 45, 65, 0.6)';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.arc(-s * 0.05, -s * 0.3, s * 0.22, 0.5, Math.PI * 1.5);
+                ctx.stroke();
+
+                ctx.restore();
+                return;
+            }
+
+            // Normal Flying / Landing / Taking Off Crow
             const wingAngle = this.isGliding
                 ? Math.sin(this.wingPhase) * 0.1 + 0.3
                 : Math.sin(this.wingPhase) * 0.8;
 
-            const s = this.size;
             const dir = this.vx > 0 ? 1 : -1;
 
             ctx.save();
