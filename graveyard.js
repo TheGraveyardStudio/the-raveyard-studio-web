@@ -179,60 +179,119 @@
 
     function initTombstones() {
         tombstones = [];
-        const count = Math.floor(W / 120);
+        const count = Math.floor(W / 90);
         for (let i = 0; i < count; i++) {
-            const x = rand(20, W - 20);
-            const baseW = rand(22, 42);
-            const baseH = rand(35, 70);
-            const type = Math.random() < 0.3 ? 'cross' : 'rounded';
-            const tilt = rand(-0.06, 0.06);
-            const depth = rand(0, 1); // parallax depth
+            const x = rand(30, W - 30);
+            const baseW = rand(28, 52);
+            const baseH = rand(45, 90);
+            const type = Math.random() < 0.35 ? 'cross' : (Math.random() < 0.7 ? 'rounded' : 'stepped');
+            const tilt = rand(-0.05, 0.05);
+            const depth = rand(0.2, 1); // parallax depth
             tombstones.push({ x, baseW, baseH, type, tilt, depth });
         }
-        // Sort by depth so farther ones draw first
         tombstones.sort((a, b) => a.depth - b.depth);
     }
 
     function drawTombstones(time) {
         const gy = groundY();
         for (const t of tombstones) {
-            const scale = lerp(0.5, 1.1, t.depth);
-            const yOff = lerp(-30, 10, t.depth);
+            const scale = lerp(0.65, 1.2, t.depth);
+            const yOff = lerp(-25, 12, t.depth);
             const w = t.baseW * scale;
             const h = t.baseH * scale;
             const x = t.x;
             const y = gy + yOff;
-            const alpha = lerp(0.3, 0.8, t.depth);
+            const alpha = lerp(0.6, 0.98, t.depth);
 
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(t.tilt);
+            ctx.globalAlpha = alpha;
+
+            // 3D Shadow/Depth offset
+            ctx.fillStyle = 'rgba(10, 12, 20, 0.6)';
+            ctx.fillRect(-w / 2 + 4, -h + 4, w, h);
+
+            // Main Stone Body Gradient (Moonlit Slate/Granite)
+            const stoneGrad = ctx.createLinearGradient(-w / 2, -h, w / 2, 0);
+            stoneGrad.addColorStop(0, '#424d66');
+            stoneGrad.addColorStop(0.35, '#333b50');
+            stoneGrad.addColorStop(1, '#1e2434');
 
             if (t.type === 'cross') {
-                const armW = w * 0.18;
-                const armSpan = w * 0.5;
-                ctx.fillStyle = `rgba(40, 42, 70, ${alpha})`;
+                const armW = w * 0.22;
+                const armSpan = w * 0.6;
+                ctx.fillStyle = stoneGrad;
+
                 // Vertical beam
                 ctx.fillRect(-armW / 2, -h, armW, h);
                 // Horizontal beam
-                ctx.fillRect(-armSpan / 2, -h * 0.72, armSpan, armW);
-            } else {
-                ctx.fillStyle = `rgba(40, 42, 70, ${alpha})`;
+                ctx.fillRect(-armSpan / 2, -h * 0.7, armSpan, armW);
+
+                // Moonlit rim highlight (top & left edges)
+                ctx.strokeStyle = 'rgba(215, 230, 255, 0.75)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                // Vertical top & left
+                ctx.moveTo(-armW / 2, 0);
+                ctx.lineTo(-armW / 2, -h);
+                ctx.lineTo(armW / 2, -h);
+                // Horizontal cross highlights
+                ctx.moveTo(-armSpan / 2, -h * 0.7);
+                ctx.lineTo(-armSpan / 2, -h * 0.7 + armW);
+                ctx.lineTo(armSpan / 2, -h * 0.7);
+                ctx.stroke();
+            } else if (t.type === 'stepped') {
+                ctx.fillStyle = stoneGrad;
+                // Base step
+                ctx.fillRect(-w * 0.55, -h * 0.2, w * 1.1, h * 0.2);
+                // Pillar body
+                ctx.fillRect(-w * 0.4, -h, w * 0.8, h * 0.8);
+
+                // Top rim highlight
+                ctx.strokeStyle = 'rgba(215, 230, 255, 0.75)';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(-w * 0.4, -h, w * 0.8, 2);
+
+                // RIP Engraving
+                ctx.fillStyle = 'rgba(15, 18, 28, 0.8)';
+                ctx.font = `bold ${Math.max(9, Math.floor(w * 0.22))}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText('R.I.P', 0, -h * 0.55);
+            } else { // rounded
+                ctx.fillStyle = stoneGrad;
                 ctx.beginPath();
                 ctx.moveTo(-w / 2, 0);
-                ctx.lineTo(-w / 2, -h * 0.6);
+                ctx.lineTo(-w / 2, -h * 0.62);
                 ctx.quadraticCurveTo(-w / 2, -h, 0, -h);
-                ctx.quadraticCurveTo(w / 2, -h, w / 2, -h * 0.6);
+                ctx.quadraticCurveTo(w / 2, -h, w / 2, -h * 0.62);
                 ctx.lineTo(w / 2, 0);
                 ctx.closePath();
                 ctx.fill();
 
-                // Subtle crack / detail line
-                ctx.strokeStyle = `rgba(60, 62, 95, ${alpha * 0.6})`;
-                ctx.lineWidth = 0.5;
+                // Moonlit rim highlight along left and top arch
+                ctx.strokeStyle = 'rgba(215, 230, 255, 0.8)';
+                ctx.lineWidth = 1.8;
                 ctx.beginPath();
-                ctx.moveTo(rand(-w * 0.2, w * 0.2), -h * 0.3);
-                ctx.lineTo(rand(-w * 0.15, w * 0.15), -h * 0.6);
+                ctx.moveTo(-w / 2, 0);
+                ctx.lineTo(-w / 2, -h * 0.62);
+                ctx.quadraticCurveTo(-w / 2, -h, 0, -h);
+                ctx.stroke();
+
+                // Cross engraving
+                ctx.fillStyle = 'rgba(15, 18, 28, 0.75)';
+                const cW = w * 0.12;
+                const cH = h * 0.25;
+                ctx.fillRect(-cW / 2, -h * 0.72, cW, cH);
+                ctx.fillRect(-cH * 0.35, -h * 0.66, cH * 0.7, cW);
+
+                // Detail Crack
+                ctx.strokeStyle = 'rgba(15, 18, 28, 0.8)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(-w * 0.15, -h * 0.4);
+                ctx.lineTo(-w * 0.05, -h * 0.25);
+                ctx.lineTo(-w * 0.1, -h * 0.1);
                 ctx.stroke();
             }
 
@@ -243,90 +302,191 @@
     function drawGround(time) {
         const gy = groundY();
 
-        // Ground gradient
-        const grad = ctx.createLinearGradient(0, gy - 30, 0, H);
-        grad.addColorStop(0, '#0d0e1a');
-        grad.addColorStop(0.3, '#0a0b14');
-        grad.addColorStop(1, '#060710');
+        // Natural Earthy Soil Ground Gradient (Rich dark dirt/soil, zero purple)
+        const grad = ctx.createLinearGradient(0, gy - 20, 0, H);
+        grad.addColorStop(0, '#1b1713');
+        grad.addColorStop(0.25, '#14100c');
+        grad.addColorStop(0.6, '#0d0a08');
+        grad.addColorStop(1, '#060504');
         ctx.fillStyle = grad;
         ctx.fillRect(0, gy - 5, W, H - gy + 5);
 
-        // Bumpy grass silhouette
-        ctx.fillStyle = '#0d0e1a';
+        // Natural earthy soil mounds & bumpy grass edge
+        ctx.fillStyle = '#1b1713';
         ctx.beginPath();
         ctx.moveTo(0, gy);
-        for (let x = 0; x <= W; x += 3) {
-            const grassH = Math.sin(x * 0.02 + time * 0.0008) * 4
-                + Math.sin(x * 0.05 + time * 0.002) * 2
-                + Math.sin(x * 0.1 + time * 0.003) * 1;
-            ctx.lineTo(x, gy - 3 + grassH);
+        for (let x = 0; x <= W; x += 4) {
+            const soilBump = Math.sin(x * 0.015 + time * 0.0003) * 5
+                + Math.sin(x * 0.04 + time * 0.001) * 2.5;
+            ctx.lineTo(x, gy - 4 + soilBump);
         }
-        ctx.lineTo(W, gy + 20);
-        ctx.lineTo(0, gy + 20);
+        ctx.lineTo(W, gy + 30);
+        ctx.lineTo(0, gy + 30);
         ctx.closePath();
         ctx.fill();
+
+        // Subtle moonlit rim highlight on ground edge
+        ctx.strokeStyle = 'rgba(180, 200, 230, 0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, gy - 2);
+        for (let x = 0; x <= W; x += 20) {
+            ctx.lineTo(x, gy - 2 + Math.sin(x * 0.02) * 2);
+        }
+        ctx.stroke();
     }
 
-    // ── Dead Trees ────────────────────────────────────────────────
-    let trees = [];
-    function initTrees() {
-        trees = [];
-        const count = Math.max(2, Math.floor(W / 400));
+    // ── Slow Swaying Bushes (Replaces old trees) ───────────────────
+    let bushes = [];
+    function initBushes() {
+        bushes = [];
+        const count = Math.max(6, Math.floor(W / 140));
         for (let i = 0; i < count; i++) {
-            trees.push({
-                x: rand(50, W - 50),
-                height: rand(120, 220),
-                branches: Math.floor(rand(3, 6)),
-                sway: rand(0.002, 0.005),
+            bushes.push({
+                x: rand(20, W - 20),
+                radius: rand(18, 38),
+                clusters: Math.floor(rand(4, 7)),
                 phase: rand(0, Math.PI * 2),
             });
         }
     }
 
-    function drawBranch(x, y, angle, length, thickness, depth) {
-        if (depth <= 0 || length < 5) return;
-        const endX = x + Math.cos(angle) * length;
-        const endY = y + Math.sin(angle) * length;
-        ctx.strokeStyle = `rgba(25, 27, 45, ${0.4 + depth * 0.08})`;
-        ctx.lineWidth = thickness;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-        // Sub-branches
-        if (depth > 1) {
-            drawBranch(endX, endY, angle - rand(0.3, 0.7), length * rand(0.5, 0.75), thickness * 0.6, depth - 1);
-            drawBranch(endX, endY, angle + rand(0.3, 0.7), length * rand(0.5, 0.75), thickness * 0.6, depth - 1);
-        }
-    }
-
-    function drawTrees(time) {
+    function drawBushes(time) {
         const gy = groundY();
-        for (const t of trees) {
-            const sway = Math.sin(time * t.sway + t.phase) * 0.03;
+        for (const b of bushes) {
+            // Very slow, gentle sway
+            const sway = Math.sin(time * 0.0006 + b.phase) * 0.015;
             ctx.save();
-            ctx.translate(t.x, gy);
+            ctx.translate(b.x, gy + 4);
             ctx.rotate(sway);
 
-            // Trunk
-            ctx.strokeStyle = 'rgba(25, 27, 45, 0.65)';
-            ctx.lineWidth = 5;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.quadraticCurveTo(rand(-5, 5), -t.height * 0.5, 0, -t.height);
-            ctx.stroke();
+            // Dark earthy green/slate bush foliage
+            const bushGrad = ctx.createRadialGradient(0, -b.radius * 0.5, 0, 0, -b.radius * 0.5, b.radius * 1.2);
+            bushGrad.addColorStop(0, '#22302a');
+            bushGrad.addColorStop(0.6, '#151e1a');
+            bushGrad.addColorStop(1, '#0d1311');
 
-            // Branches from trunk
-            for (let b = 0; b < t.branches; b++) {
-                const branchY = -t.height * rand(0.3, 0.9);
-                const angle = rand(-0.4, 0.4) + (b % 2 === 0 ? -1.2 : 1.2);
-                drawBranch(0, branchY, angle, rand(30, 60), 2.5, 3);
+            ctx.fillStyle = bushGrad;
+
+            // Draw cluster of rounded leaf balls
+            for (let c = 0; c < b.clusters; c++) {
+                const cAngle = (c / b.clusters) * Math.PI - Math.PI / 2;
+                const cDist = b.radius * 0.45;
+                const cx = Math.cos(cAngle) * cDist;
+                const cy = Math.sin(cAngle) * cDist - b.radius * 0.4;
+                const cr = b.radius * rand(0.45, 0.65);
+
+                ctx.beginPath();
+                ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Moonlit leaf edge highlight
+                ctx.strokeStyle = 'rgba(160, 190, 185, 0.25)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy - cr * 0.2, cr * 0.8, Math.PI * 1.1, Math.PI * 1.9);
+                ctx.stroke();
             }
 
             ctx.restore();
         }
+    }
+
+    // ── 3D Graveyard Entrance Pillars & Wrought Iron Gate ──────────
+    function drawEntrancePillars(time) {
+        const gy = groundY();
+        const pillarWidth = Math.min(65, W * 0.06);
+        const pillarHeight = Math.min(260, H * 0.42);
+
+        const leftX = W * 0.04;
+        const rightX = W * 0.96;
+
+        const drawPillar = (x, isLeft) => {
+            ctx.save();
+            ctx.translate(x, gy + 15);
+
+            // Pillar 3D Base & Body (Moonlit Gothic Stone)
+            const pGrad = ctx.createLinearGradient(-pillarWidth / 2, -pillarHeight, pillarWidth / 2, 0);
+            pGrad.addColorStop(0, '#505b73');
+            pGrad.addColorStop(0.3, '#3a4356');
+            pGrad.addColorStop(0.8, '#242a38');
+            pGrad.addColorStop(1, '#171a24');
+
+            ctx.fillStyle = pGrad;
+
+            // Main Stone Column
+            ctx.fillRect(-pillarWidth / 2, -pillarHeight, pillarWidth, pillarHeight);
+
+            // Pillar Capital / Cap (Top overhang stone)
+            const capW = pillarWidth * 1.35;
+            const capH = 18;
+            ctx.fillRect(-capW / 2, -pillarHeight - capH, capW, capH);
+
+            // Pillar Base Step
+            const baseW = pillarWidth * 1.25;
+            const baseH = 22;
+            ctx.fillRect(-baseW / 2, -baseH, baseW, baseH);
+
+            // Wrought Iron Spikes on top cap
+            ctx.strokeStyle = '#181b26';
+            ctx.lineWidth = 3;
+            for (let i = -2; i <= 2; i++) {
+                const sX = i * (capW / 6);
+                ctx.beginPath();
+                ctx.moveTo(sX, -pillarHeight - capH);
+                ctx.lineTo(sX, -pillarHeight - capH - 24);
+                ctx.lineTo(sX + (i < 0 ? -3 : 3), -pillarHeight - capH - 32);
+                ctx.stroke();
+            }
+
+            // Moonlit Rim Highlights on Stone Edges
+            ctx.strokeStyle = 'rgba(230, 240, 255, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // Top Cap Left & Top Line
+            ctx.moveTo(-capW / 2, -pillarHeight - capH);
+            ctx.lineTo(-capW / 2, -pillarHeight - capH);
+            ctx.lineTo(capW / 2, -pillarHeight - capH);
+            // Column Left Edge
+            ctx.moveTo(-pillarWidth / 2, -pillarHeight);
+            ctx.lineTo(-pillarWidth / 2, 0);
+            ctx.stroke();
+
+            // Gothic Iron Gate bars extending inward
+            ctx.strokeStyle = 'rgba(25, 29, 42, 0.85)';
+            ctx.lineWidth = 4;
+            const dir = isLeft ? 1 : -1;
+            for (let g = 0; g < 4; g++) {
+                const gY = -pillarHeight * (0.2 + g * 0.2);
+                ctx.beginPath();
+                ctx.moveTo(0, gY);
+                ctx.lineTo(dir * (pillarWidth * 1.8), gY);
+                ctx.stroke();
+            }
+
+            // Soft glowing lantern on pillar cap
+            const lanternY = -pillarHeight - capH - 12;
+            const lanternGlow = ctx.createRadialGradient(0, lanternY, 2, 0, lanternY, 35);
+            lanternGlow.addColorStop(0, 'rgba(255, 210, 140, 0.65)');
+            lanternGlow.addColorStop(0.4, 'rgba(240, 180, 100, 0.2)');
+            lanternGlow.addColorStop(1, 'rgba(0,0,0,0)');
+
+            ctx.fillStyle = lanternGlow;
+            ctx.beginPath();
+            ctx.arc(0, lanternY, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Lantern Glass Fixture
+            ctx.fillStyle = '#ffe0aa';
+            ctx.beginPath();
+            ctx.arc(0, lanternY, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        };
+
+        drawPillar(leftX, true);
+        drawPillar(rightX, false);
     }
 
     // ── Fog / Mist Particles ──────────────────────────────────────
@@ -673,7 +833,7 @@
         initMoon();
         initStars();
         initTombstones();
-        initTrees();
+        initBushes();
         initFog();
         initWind();
         initLeaves();
@@ -718,9 +878,10 @@
         drawStars(time);
         drawMoon(time);
         drawWind(time);
-        drawTrees(time);
         drawTombstones(time);
+        drawBushes(time);
         drawGround(time);
+        drawEntrancePillars(time);
         drawFog(time);
         drawLeaves(time);
 
