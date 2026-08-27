@@ -1,0 +1,5 @@
+# Local dev
+server.js
+firebase-debug.log
+.DS_Store
+Thumbs.db
