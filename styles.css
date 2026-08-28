@@ -800,6 +800,68 @@ body {
     color: var(--secondary-accent);
 }
 
+/* Policy Navigation Hub & Tabs */
+.policy-hub-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.policy-tab-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.policy-tab-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.policy-tab-link.active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.2));
+    border-color: var(--secondary-accent);
+    color: white;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+}
+
+/* Game Card Legal Links */
+.game-legal-links {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 12.5px;
+}
+
+.game-legal-link {
+    color: var(--text-sub);
+    text-decoration: none;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.game-legal-link:hover {
+    color: var(--secondary-accent);
+    text-decoration: underline;
+}
+
 /* Footer */
 .site-footer {
     background: rgba(5, 6, 12, 0.4);
