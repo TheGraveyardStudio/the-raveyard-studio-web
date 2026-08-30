@@ -334,6 +334,30 @@ body {
     box-shadow: 0 4px 15px rgba(167, 139, 250, 0.25);
 }
 
+.btn-webplay {
+    background: linear-gradient(135deg, #7c3aed, #0891b2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 12px 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);
+}
+
+.btn-webplay:hover {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    border-color: #ffffff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(6, 182, 212, 0.5);
+}
+
 /* Stats */
 .hero-stats {
     display: flex;

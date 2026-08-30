@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Space Driver 3D | The Graveyard Studio</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      :root {
+        --bg-dark: #080911;
+        --primary-glow: #8b5cf6;
+        --primary-accent: #6d28d9;
+        --secondary-accent: #06b6d4;
+        --text-main: #f3f4f6;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .game-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        background: rgba(12, 14, 28, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 100;
+      }
+      .brand-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text-main);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: opacity 0.2s;
+      }
+      .brand-link:hover {
+        opacity: 0.85;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(139, 92, 246, 0.15);
+        border: 1px solid rgba(139, 92, 246, 0.4);
+        border-radius: 8px;
+        color: #c4b5fd;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+      .back-btn:hover {
+        background: rgba(139, 92, 246, 0.35);
+        border-color: #8b5cf6;
+        color: #ffffff;
+        transform: translateX(-2px);
+      }
+      .game-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 0;
+      }
+      #unity-container {
+        box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="game-topbar">
+      <a href="../index.html" class="brand-link">
+        <span>💀</span>
+        <span>THE GRAVEYARD STUDIO</span>
+      </a>
+      <a href="../index.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Ana Sayfaya Dön</span>
+      </a>
+    </header>
+
+    <main class="game-wrapper">
+      <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+          <div id="unity-logo"></div>
+          <div id="unity-progress-bar-empty">
+            <div id="unity-progress-bar-full"></div>
+          </div>
+        </div>
+        <div id="unity-warning"> </div>
+        <div id="unity-footer">
+          <div id="unity-logo-title-footer"></div>
+          <div id="unity-fullscreen-button"></div>
+          <div id="unity-build-title">Space Driver 3D</div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebPublishToPlay.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebPublishToPlay.data.br",
+        frameworkUrl: buildUrl + "/WebPublishToPlay.framework.js.br",
+        codeUrl: buildUrl + "/WebPublishToPlay.wasm.br",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "The Graveyard Studio",
+        productName: "Space Driver 3D",
+        productVersion: "0.2.37",
+        showBanner: unityShowBanner,
+        autoSyncPersistentDataPath: true
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+      } else {
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

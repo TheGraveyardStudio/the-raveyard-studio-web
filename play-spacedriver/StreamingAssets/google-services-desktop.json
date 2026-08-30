@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "834982097785",
+    "project_id": "escape-from-the-world-afe3e",
+    "storage_bucket": "escape-from-the-world-afe3e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834982097785:android:c3f4e1a8864532a19b35a8",
+        "android_client_info": {
+          "package_name": "com.thegraveyardstudio.spacedriver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "834982097785-46o0r3t5bcrk5j7guh2ta1ifppbt97um.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thegraveyardstudio.spacedriver",
+            "certificate_hash": "d38c962e3a14b8afa13478fb1c252aab1df2a7b1"
+          }
+        },
+        {
+          "client_id": "834982097785-bs5p9rtuqnp189f05b4q1m3pop4tiqd6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlapdY4s4J2Hj0Y-EdK4SyuU1pwm6RfA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "834982097785-bs5p9rtuqnp189f05b4q1m3pop4tiqd6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,6 +5,44 @@
       "firebase.json",
       "**/.*"
     ],
-    "cleanUrls": true
+    "cleanUrls": true,
+    "headers": [
+      {
+        "source": "**/*.br",
+        "headers": [
+          {
+            "key": "Content-Encoding",
+            "value": "br"
+          }
+        ]
+      },
+      {
+        "source": "**/Build/*.data.br",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/octet-stream"
+          }
+        ]
+      },
+      {
+        "source": "**/Build/*.wasm.br",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/wasm"
+          }
+        ]
+      },
+      {
+        "source": "**/Build/*.js.br",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/javascript"
+          }
+        ]
+      }
+    ]
   }
 }
