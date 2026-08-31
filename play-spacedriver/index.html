@@ -140,13 +140,14 @@
         updateBannerVisibility();
       }
 
+      var buildVersion = "v0.2.37.1";
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebPublishToPlay.loader.js";
+      var loaderUrl = buildUrl + "/WebPublishToPlay.loader.js?" + buildVersion;
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/WebPublishToPlay.data.br",
-        frameworkUrl: buildUrl + "/WebPublishToPlay.framework.js.br",
-        codeUrl: buildUrl + "/WebPublishToPlay.wasm.br",
+        dataUrl: buildUrl + "/WebPublishToPlay.data.br?" + buildVersion,
+        frameworkUrl: buildUrl + "/WebPublishToPlay.framework.js.br?" + buildVersion,
+        codeUrl: buildUrl + "/WebPublishToPlay.wasm.br?" + buildVersion,
         streamingAssetsUrl: "StreamingAssets",
         companyName: "The Graveyard Studio",
         productName: "Space Driver 3D",
